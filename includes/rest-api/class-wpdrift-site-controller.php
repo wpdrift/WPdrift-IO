@@ -41,7 +41,7 @@ class WPdrift_Site_Controller extends WP_REST_Controller {
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'get_plugin_status' ),
-				'permission_callback' => array( $this, 'get_plugin_status_permissions_check' ),
+				'permission_callback' => array( $this, 'get_items_permissions_check' ),
 			]
 		);
 
@@ -51,7 +51,7 @@ class WPdrift_Site_Controller extends WP_REST_Controller {
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'get_edd_plugin_status' ),
-				'permission_callback' => array( $this, 'get_plugin_status_permissions_check' ),
+				'permission_callback' => array( $this, 'get_items_permissions_check' ),
 			]
 		);
 	}
@@ -61,28 +61,20 @@ class WPdrift_Site_Controller extends WP_REST_Controller {
 	 * @return [type] [description]
 	 */
 	public function get_items( $request ) {
-		/**
-		 * [$data description]
-		 * @var array
-		 */
-		$data = array(
-			'name'              => get_bloginfo( 'name' ),
-			'description'       => get_bloginfo( 'description' ),
-			'version'           => get_bloginfo( 'version' ),
-			'url'               => get_bloginfo( 'url' ),
-			'admin_email'       => get_bloginfo( 'admin_email' ),
-			'language'          => get_bloginfo( 'language' ),
-			'rss2_url'          => get_bloginfo( 'rss2_url' ),
-			'comments_rss2_url' => get_bloginfo( 'comments_rss2_url' ),
-			'admin_url'         => admin_url(),
-			'ajax_url'          => admin_url( 'admin-ajax.php' ),
+		return rest_ensure_response(
+			[
+				'name'              => get_bloginfo( 'name' ),
+				'description'       => get_bloginfo( 'description' ),
+				'version'           => get_bloginfo( 'version' ),
+				'url'               => get_bloginfo( 'url' ),
+				'admin_email'       => get_bloginfo( 'admin_email' ),
+				'language'          => get_bloginfo( 'language' ),
+				'rss2_url'          => get_bloginfo( 'rss2_url' ),
+				'comments_rss2_url' => get_bloginfo( 'comments_rss2_url' ),
+				'admin_url'         => admin_url(),
+				'ajax_url'          => admin_url( 'admin-ajax.php' ),
+			]
 		);
-
-		/**
-		 * [return description]
-		 * @var [type]
-		 */
-		return rest_ensure_response( $data );
 	}
 
 	/**
@@ -128,14 +120,6 @@ class WPdrift_Site_Controller extends WP_REST_Controller {
 			return new WP_Error( 'rest_forbidden', esc_html__( 'You cannot view the resource.' ), array( 'status' => $this->authorization_status_code() ) );
 		}
 
-		return true;
-	}
-
-	/**
-	 * [get_plugin_status_permissions_check description]
-	 * @return [type] [description]
-	 */
-	public function get_plugin_status_permissions_check() {
 		return true;
 	}
 
