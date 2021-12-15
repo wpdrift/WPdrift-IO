@@ -61,20 +61,24 @@ class WPdrift_Site_Controller extends WP_REST_Controller {
 	 * @return [type] [description]
 	 */
 	public function get_items( $request ) {
-		return rest_ensure_response(
-			[
-				'name'              => get_bloginfo( 'name' ),
-				'description'       => get_bloginfo( 'description' ),
-				'version'           => get_bloginfo( 'version' ),
-				'url'               => get_bloginfo( 'url' ),
-				'admin_email'       => get_bloginfo( 'admin_email' ),
-				'language'          => get_bloginfo( 'language' ),
-				'rss2_url'          => get_bloginfo( 'rss2_url' ),
-				'comments_rss2_url' => get_bloginfo( 'comments_rss2_url' ),
-				'admin_url'         => admin_url(),
-				'ajax_url'          => admin_url( 'admin-ajax.php' ),
-			]
-		);
+		$items = [
+			'name'              => get_bloginfo( 'name' ),
+			'description'       => get_bloginfo( 'description' ),
+			'version'           => get_bloginfo( 'version' ),
+			'url'               => get_bloginfo( 'url' ),
+			'admin_email'       => get_bloginfo( 'admin_email' ),
+			'language'          => get_bloginfo( 'language' ),
+			'rss2_url'          => get_bloginfo( 'rss2_url' ),
+			'comments_rss2_url' => get_bloginfo( 'comments_rss2_url' ),
+			'admin_url'         => admin_url(),
+			'ajax_url'          => admin_url( 'admin-ajax.php' ),
+		];
+
+		if ( function_exists( 'edd_currency_symbol' ) ) {
+			$items['edd_currency_symbol'] = edd_currency_symbol();
+		}
+
+		return rest_ensure_response( $items );
 	}
 
 	/**

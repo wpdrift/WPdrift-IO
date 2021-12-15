@@ -28,7 +28,6 @@ class WPdrift_Dashboard_Controller extends WP_REST_Controller {
 	 * @since 1.0.0
 	 */
 	public function register_routes() {
-
 		/**
 		 * [register_rest_route description]
 		 * @var [type]

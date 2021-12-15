@@ -182,7 +182,13 @@ class WPdrift_EDD_Posts_Controller extends WP_REST_Controller {
 		}
 
 		$all = $wpdb->get_col(
-			$wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE post_type = %s", $args['post_type'] )
+			$wpdb->prepare(
+				"
+				SELECT ID FROM $wpdb->posts
+				WHERE post_type = %s
+				",
+				$args['post_type']
+			)
 		);
 
 		return $all;
