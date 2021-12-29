@@ -134,8 +134,10 @@ class WPdrift_Worker {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'oauth/class-wpdrift-worker-oauth.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wpdrift-worker-date-query.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wpdrift-worker-api.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-runn-tools-subscription-reports.php';
 
-		$this->loader = new WPdrift_IO_Loader();
+		$this->loader               = new WPdrift_IO_Loader();
+		$this->subscription_reports = new Runn_Tools_Subscription_Reports();
 	}
 
 	/**
