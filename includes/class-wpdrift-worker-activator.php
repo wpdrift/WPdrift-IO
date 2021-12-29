@@ -21,8 +21,7 @@
  * @author     upnrunn <admin@upnrunn.com>
  */
 
-class WPdrift_IO_Activator {
-
+class WPdrift_Worker_Activator {
 	/**
 	 * Short Description. (use period)
 	 *
@@ -33,6 +32,7 @@ class WPdrift_IO_Activator {
 	public static function activate( $network_wide ) {
 		self::setup();
 		self::oauth_db();
+		self::install_mrr_history_db();
 		self::oauth_db_upgrade();
 		self::server_activation( $network_wide );
 	}
@@ -75,7 +75,6 @@ class WPdrift_IO_Activator {
 	 * Upgrade method
 	 */
 	public function oauth_db_upgrade() {
-
 		// Fix
 		// https://github.com/justingreerbbi/wp-oauth-server/issues/7
 		// https://github.com/justingreerbbi/wp-oauth-server/issues/3
@@ -141,7 +140,6 @@ class WPdrift_IO_Activator {
 	 * @return [type] [description]
 	 */
 	public function oauth_db() {
-
 		global $wpdb;
 		$charset_collate = '';
 
@@ -248,12 +246,13 @@ class WPdrift_IO_Activator {
 		 * @todo Add pure PHP library to handle openSSL functionality if the server does not support it.
 		 */
 		if ( function_exists( 'openssl_pkey_new' ) ) {
-
 			if ( ! self::has_certificates() ) {
-				$res = openssl_pkey_new( array(
-					'private_key_bits' => 2048,
-					'private_key_type' => OPENSSL_KEYTYPE_RSA,
-				) );
+				$res = openssl_pkey_new(
+					array(
+						'private_key_bits' => 2048,
+						'private_key_type' => OPENSSL_KEYTYPE_RSA,
+					)
+				);
 				openssl_pkey_export( $res, $privKey );
 				file_put_contents( WPDRIFT_WORKER_PATH . 'oauth/keys/private_key.pem', $privKey );
 
@@ -266,9 +265,36 @@ class WPdrift_IO_Activator {
 				$plugin_version = $plugin_data['Version'];
 				update_option( 'wpdrift_helper_version', $plugin_version );
 			}
-
 		}
 
+	}
+
+	/**
+	 * [install_mrr_history_db description]
+	 * @return [type] [description]
+	 */
+	public function install_mrr_history_db() {
+		global $wpdb;
+
+		$mrr_history_db_version = '1.0.0';
+		$table_name             = $wpdb->prefix . 'edd_mrr_history';
+
+		$charset_collate = $wpdb->get_charset_collate();
+
+		$sql = "CREATE TABLE $table_name (
+			id BIGINT(20) NOT NULL AUTO_INCREMENT,
+			customer_id BIGINT(20) NOT NULL,
+			created datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			account_mrr MEDIUMTEXT NOT NULL,
+			total_mrr MEDIUMTEXT NOT NULL,
+			delta MEDIUMTEXT NOT NULL,
+			PRIMARY KEY  (id)
+		) $charset_collate;";
+
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+		dbDelta( $sql );
+
+		add_option( 'edd_mrr_history_db_version', $mrr_history_db_version );
 	}
 
 	/**
@@ -277,10 +303,13 @@ class WPdrift_IO_Activator {
 	 * @return array
 	 */
 	public function get_server_certs() {
-		$keys = apply_filters( 'wpdrift_worket_server_keys', array(
-			'public'  => WPDRIFT_WORKER_PATH . 'oauth/keys/public_key.pem',
-			'private' => WPDRIFT_WORKER_PATH . 'oauth/keys/private_key.pem',
-		) );
+		$keys = apply_filters(
+			'wpdrift_worket_server_keys',
+			array(
+				'public'  => WPDRIFT_WORKER_PATH . 'oauth/keys/public_key.pem',
+				'private' => WPDRIFT_WORKER_PATH . 'oauth/keys/private_key.pem',
+			)
+		);
 
 		return $keys;
 	}

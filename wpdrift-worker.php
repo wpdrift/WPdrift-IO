@@ -38,7 +38,7 @@ if ( ! defined( 'WPDRIFT_WORKER_FILE' ) ) {
  */
 function activate_wpdrift_worker( $network_wide ) {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-wpdrift-worker-activator.php';
-	WPdrift_IO_Activator::activate( $network_wide );
+	WPdrift_Worker_Activator::activate( $network_wide );
 }
 
 /**
