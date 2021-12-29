@@ -32,31 +32,9 @@ class WPdrift_Worker_Activator {
 	public static function activate( $network_wide ) {
 		self::setup();
 		self::oauth_db();
-		self::install_mrr_history_db();
 		self::oauth_db_upgrade();
+		self::install_mrr_history_db();
 		self::server_activation( $network_wide );
-	}
-
-	/**
-	 * OAuth2 Server Activation
-	 *
-	 * @param  [type] $network_wide [description]
-	 *
-	 * @return [type]               [description]
-	 */
-	public function server_activation( $network_wide ) {
-		if ( function_exists( 'is_multisite' ) && is_multisite() && $network_wide ) {
-			$mu_blogs = wp_get_sites();
-			foreach ( $mu_blogs as $mu_blog ) {
-				switch_to_blog( $mu_blog['blog_id'] );
-				wpdrift_worker_server_register_rewrites();
-				flush_rewrite_rules();
-			}
-			restore_current_blog();
-		} else {
-			wpdrift_worker_server_register_rewrites();
-			flush_rewrite_rules();
-		}
 	}
 
 	/**
@@ -64,7 +42,7 @@ class WPdrift_Worker_Activator {
 	 *
 	 * @return [type] [description]
 	 */
-	public function setup() {
+	public static function setup() {
 		$options = get_option( 'wpdrift_worker_options' );
 		if ( ! isset( $options['enabled'] ) ) {
 			update_option( 'wpdrift_worker_options', _wpdw()->defualt_settings );
@@ -72,74 +50,11 @@ class WPdrift_Worker_Activator {
 	}
 
 	/**
-	 * Upgrade method
-	 */
-	public function oauth_db_upgrade() {
-		// Fix
-		// https://github.com/justingreerbbi/wp-oauth-server/issues/7
-		// https://github.com/justingreerbbi/wp-oauth-server/issues/3
-		// And other known issues with increasing the token length
-		global $wpdb;
-		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_refresh_tokens MODIFY refresh_token VARCHAR(100);" );
-		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_refresh_tokens MODIFY client_id VARCHAR(100);" );
-
-		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_clients MODIFY client_id VARCHAR(100);" );
-		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_clients MODIFY client_secret VARCHAR(100);" );
-
-		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_public_keys MODIFY client_id VARCHAR(100);" );
-		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_jwt MODIFY client_id VARCHAR(100);" );
-		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_authorization_codes MODIFY client_id VARCHAR(100);" );
-
-		/**
-		 * Update the clients and import then into the CPT format
-		 *
-		 * 1. Check if the clients table exists - Yes = Step 2
-		 * 2. Query the clients table and return all the clients
-		 *
-		 */
-		global $wpdb;
-		$check_clients_table = $wpdb->query( "SHOW TABLES LIKE '{$wpdb->prefix}oauth_clients' " );
-		if ( $check_clients_table ) {
-			$clients = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}oauth_clients " );
-
-			$grant_types = array(
-				'authorization_code',
-				'implicit',
-				'password',
-				'client_credentials',
-				'refresh_token',
-			);
-
-			foreach ( $clients as $client ) {
-				$client_data = array(
-					'post_title'     => $client->name,
-					'post_status'    => 'publish',
-					'post_author'    => get_current_user_id(),
-					'post_type'      => 'oauth_client',
-					'comment_status' => 'closed',
-					'meta_input'     => array(
-						'client_id'     => $client->client_id,
-						'client_secret' => $client->client_secret,
-						'grant_types'   => $grant_types,
-						'redirect_uri'  => $client->redirect_uri,
-						'user_id'       => $client->user_id,
-					),
-				);
-
-				wp_insert_post( $client_data );
-			}
-		}
-
-		// DELETE OLD CLIENTS TABLE
-		$wpdb->query( "DROP TABLE {$wpdb->prefix}oauth_clients" );
-	}
-
-	/**
 	 * plugin update check
 	 *
 	 * @return [type] [description]
 	 */
-	public function oauth_db() {
+	public static function oauth_db() {
 		global $wpdb;
 		$charset_collate = '';
 
@@ -270,10 +185,73 @@ class WPdrift_Worker_Activator {
 	}
 
 	/**
+	 * Upgrade method
+	 */
+	public static function oauth_db_upgrade() {
+		// Fix
+		// https://github.com/justingreerbbi/wp-oauth-server/issues/7
+		// https://github.com/justingreerbbi/wp-oauth-server/issues/3
+		// And other known issues with increasing the token length
+		global $wpdb;
+		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_refresh_tokens MODIFY refresh_token VARCHAR(100);" );
+		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_refresh_tokens MODIFY client_id VARCHAR(100);" );
+
+		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_clients MODIFY client_id VARCHAR(100);" );
+		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_clients MODIFY client_secret VARCHAR(100);" );
+
+		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_public_keys MODIFY client_id VARCHAR(100);" );
+		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_jwt MODIFY client_id VARCHAR(100);" );
+		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_authorization_codes MODIFY client_id VARCHAR(100);" );
+
+		/**
+		 * Update the clients and import then into the CPT format
+		 *
+		 * 1. Check if the clients table exists - Yes = Step 2
+		 * 2. Query the clients table and return all the clients
+		 *
+		 */
+		global $wpdb;
+		$check_clients_table = $wpdb->query( "SHOW TABLES LIKE '{$wpdb->prefix}oauth_clients' " );
+		if ( $check_clients_table ) {
+			$clients = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}oauth_clients " );
+
+			$grant_types = array(
+				'authorization_code',
+				'implicit',
+				'password',
+				'client_credentials',
+				'refresh_token',
+			);
+
+			foreach ( $clients as $client ) {
+				$client_data = array(
+					'post_title'     => $client->name,
+					'post_status'    => 'publish',
+					'post_author'    => get_current_user_id(),
+					'post_type'      => 'oauth_client',
+					'comment_status' => 'closed',
+					'meta_input'     => array(
+						'client_id'     => $client->client_id,
+						'client_secret' => $client->client_secret,
+						'grant_types'   => $grant_types,
+						'redirect_uri'  => $client->redirect_uri,
+						'user_id'       => $client->user_id,
+					),
+				);
+
+				wp_insert_post( $client_data );
+			}
+		}
+
+		// DELETE OLD CLIENTS TABLE
+		$wpdb->query( "DROP TABLE {$wpdb->prefix}oauth_clients" );
+	}
+
+	/**
 	 * [install_mrr_history_db description]
 	 * @return [type] [description]
 	 */
-	public function install_mrr_history_db() {
+	public static function install_mrr_history_db() {
 		global $wpdb;
 
 		$mrr_history_db_version = '1.0.0';
@@ -298,11 +276,33 @@ class WPdrift_Worker_Activator {
 	}
 
 	/**
+	 * OAuth2 Server Activation
+	 *
+	 * @param  [type] $network_wide [description]
+	 *
+	 * @return [type]               [description]
+	 */
+	public static function server_activation( $network_wide ) {
+		if ( function_exists( 'is_multisite' ) && is_multisite() && $network_wide ) {
+			$mu_blogs = wp_get_sites();
+			foreach ( $mu_blogs as $mu_blog ) {
+				switch_to_blog( $mu_blog['blog_id'] );
+				wpdrift_worker_server_register_rewrites();
+				flush_rewrite_rules();
+			}
+			restore_current_blog();
+		} else {
+			wpdrift_worker_server_register_rewrites();
+			flush_rewrite_rules();
+		}
+	}
+
+	/**
 	 * Retireve the server keys location
 	 *
 	 * @return array
 	 */
-	public function get_server_certs() {
+	public static function get_server_certs() {
 		$keys = apply_filters(
 			'wpdrift_worket_server_keys',
 			array(
@@ -319,7 +319,7 @@ class WPdrift_Worker_Activator {
 	 *
 	 * @return boolean [description]
 	 */
-	public function has_certificates() {
+	public static function has_certificates() {
 		$keys = self::get_server_certs();
 
 		if ( is_array( $keys ) ) {
