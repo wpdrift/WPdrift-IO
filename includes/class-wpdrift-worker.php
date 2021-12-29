@@ -120,62 +120,22 @@ class WPdrift_Worker {
 	 * @return [type] [description]
 	 */
 	private function load_dependencies() {
-
 		/**
 		 * Load dependecies managed by composer.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'vendor/autoload.php';
 
-		/**
-		 * [require_once description]
-		 * @var [type]
-		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . '/includes/functions.php';
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . '/includes/rest-api/functions.php';
-
-		/**
-		 * The class responsible for orchestrating the actions and filters of the
-		 * core plugin.
-		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/functions.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/rest-api/functions.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wpdrift-worker-loader.php';
-
-		/**
-		 * The class responsible for defining internationalization functionality
-		 * of the plugin.
-		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wpdrift-worker-i18n.php';
-
-		/**
-		 * The class responsible for defining all actions that occur in the admin area.
-		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-wpdrift-worker-admin.php';
-
-		/**
-		 * The class responsible for defining all actions that occur in the public-facing
-		 * side of the site.
-		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-wpdrift-worker-public.php';
-
-		/**
-		 * The class responsible for defining all actions that occur in the oauth-facing
-		 * side of the site.
-		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'oauth/class-wpdrift-worker-oauth.php';
-
-		/**
-		 * [require_once description]
-		 * @var [type]
-		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wpdrift-worker-date-query.php';
-
-		/**
-		 * The class responsible for defining all actions that occur in the api-facing
-		 * @var [type]
-		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wpdrift-worker-api.php';
 
 		$this->loader = new WPdrift_IO_Loader();
-
 	}
 
 	/**
@@ -188,11 +148,9 @@ class WPdrift_Worker {
 	 * @access   private
 	 */
 	private function set_locale() {
-
 		$plugin_i18n = new WPdrift_IO_i18n();
 
 		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
-
 	}
 
 	/**
@@ -203,7 +161,6 @@ class WPdrift_Worker {
 	 * @access   private
 	 */
 	private function define_admin_hooks() {
-
 		$plugin_admin = new WPdrift_Worker_Admin( $this->get_plugin_name(), $this->get_version() );
 
 		$this->loader->add_action( 'admin_notices', $plugin_admin, 'incompatibility_with_wp_version' );
@@ -222,7 +179,6 @@ class WPdrift_Worker {
 	 * @access   private
 	 */
 	private function define_public_hooks() {
-
 		$plugin_public = new WPdrift_Worker_Public( $this->get_plugin_name(), $this->get_version() );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 
@@ -236,7 +192,6 @@ class WPdrift_Worker {
 	 * @access   private
 	 */
 	private function define_oauth_hooks() {
-
 		$plugin_oauth = new WPdrift_Worker_Oauth( $this->get_plugin_name(), $this->get_version() );
 
 		$this->loader->add_action( 'init', $plugin_oauth, 'server_register_query_vars' );
@@ -254,7 +209,6 @@ class WPdrift_Worker {
 	 * @access   private
 	 */
 	private function define_api_hooks() {
-
 		$plugin_api = new WPdrift_Worker_Api( $this->get_plugin_name(), $this->get_version() );
 
 		$this->loader->add_action( 'rest_index', $plugin_api, 'register_server_routes' );
@@ -392,8 +346,4 @@ class WPdrift_Worker {
 		}
 	}
 
-}
-
-function _wpdw() {
-	return WPdrift_Worker::instance();
 }

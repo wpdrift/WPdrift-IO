@@ -59,6 +59,11 @@ register_deactivation_hook( __FILE__, 'deactivate_wpdrift_worker' );
  */
 require plugin_dir_path( __FILE__ ) . 'includes/class-wpdrift-worker.php';
 
+// Returns the main instance of WPdrift_Worker.
+function _wpdw() {
+	return WPdrift_Worker::instance();
+}
+
 /**
  * Begins execution of the plugin.
  *
