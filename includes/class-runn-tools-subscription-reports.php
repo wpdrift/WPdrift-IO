@@ -11,6 +11,7 @@ class Runn_Tools_Subscription_Reports {
 	public function my_action() {
 		wp_send_json(
 			[
+				'$this->get_account_mrr( 1 )'  => $this->get_account_mrr( 1 ),
 				'$this->get_final_mrr()'       => $this->get_final_mrr(),
 				'$this->count_mrr_histories()' => $this->count_mrr_histories(),
 			]
@@ -23,7 +24,13 @@ class Runn_Tools_Subscription_Reports {
 			'created'     => $args['created'],
 		];
 
-		$final_mrr = $this->get_final_mrr();
+		$final_mrr   = $this->get_final_mrr();
+		$account_mrr = $this->get_account_mrr( $args['customer_id'] );
+
+		$recurring_amount           = floatval( $args['recurring_amount'] );
+		$history_arr['account_mrr'] = $account_mrr + $recurring_amount;
+		$history_arr['delta']       = $recurring_amount;
+		$history_arr['total_mrr']   = $final_mrr + $recurring_amount;
 
 		$this->insert_mrr_history( $history_arr );
 	}
@@ -73,6 +80,35 @@ class Runn_Tools_Subscription_Reports {
 		}
 
 		return $final_mrr;
+	}
+
+	/**
+	 * [get_account_mrr description]
+	 * @param  [type] $customer_id               [description]
+	 * @return [type]              [description]
+	 */
+	public function get_account_mrr( $customer_id ) {
+		global $wpdb;
+
+		$account_mrr = 0;
+
+		$mrr_history = $wpdb->get_row(
+			$wpdb->prepare(
+				"
+                SELECT *
+                FROM {$wpdb->prefix}edd_mrr_history
+                WHERE customer_id = %d
+                ORDER BY id DESC LIMIT 1
+                ",
+				$customer_id
+			)
+		);
+
+		if ( $mrr_history ) {
+			$account_mrr = floatval( $mrr_history->account_mrr );
+		}
+
+		return $account_mrr;
 	}
 
 	/**
