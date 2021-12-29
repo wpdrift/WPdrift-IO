@@ -1,21 +1,19 @@
 <?php
 /**
- * Plugin Name: WPdrift IO - Worker
- * Plugin URI: http://wpdrift.io/
- * Version: 1.0.3
- * Description: Analytics, automation, tools, and much more for WordPress.
- * Author: WPdrift
- * Author URI: https://wpdrift.com/
- * Text Domain: wpdrift-worker
+ * Plugin Name:     Runn Tools - Worker
+ * Plugin URI:      https://runn.tools/
+ * Description:     Analytics, automation, tools, and much more for WordPress.
+ * Author:          upnrunn™ technologies
+ * Author URI:      https://upnrunn.com/
+ * Text Domain:     runn-tools-worker
+ * Domain Path:     /languages
+ * Version:         1.0.3
  *
- * @author  Support HQ <support@upnrunn.com>
- * @package WPdrift Worker
+ * @package         Runn_Tools_Worker
  */
 
-// If this file is called directly, abort.
-if ( ! defined( 'WPINC' ) ) {
-	die;
-}
+// Exit if accessed directly.
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Currently plugin version.
