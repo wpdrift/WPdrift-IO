@@ -28,7 +28,7 @@ $recent_edd_downloads_controller->registerRoutes();
 
 require_once dirname( WPDRIFT_WORKER_FILE ) . '/includes/rest-api/edd/class-wpdrift-edd-mrr-history-controller.php';
 $edd_mrr_history_controller = new WPdrift_EDD_MRR_History_Controller();
-$edd_mrr_history_controller->registerRoutes();
+$edd_mrr_history_controller->register_routes();
 
 /**
 * Get last daily downloads

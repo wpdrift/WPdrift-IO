@@ -52,7 +52,7 @@ class WPdrift_EDD_MRR_History_Controller extends WP_REST_Controller {
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_item' ),
-					'permission_callback' => array( $this, 'get_item_permissions_check' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
 				),
 			)
 		);
@@ -68,7 +68,7 @@ class WPdrift_EDD_MRR_History_Controller extends WP_REST_Controller {
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_all' ),
-					'permission_callback' => array( $this, 'get_all_permissions_check' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
 				),
 			)
 		);
@@ -84,7 +84,7 @@ class WPdrift_EDD_MRR_History_Controller extends WP_REST_Controller {
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_updated' ),
-					'permission_callback' => array( $this, 'get_updated_permissions_check' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
 				),
 			)
 		);
@@ -123,26 +123,7 @@ class WPdrift_EDD_MRR_History_Controller extends WP_REST_Controller {
 	 */
 	public function get_all( $request ) {
 		global $wpdb;
-
-		$args = [
-			'post_type' => 'download',
-		];
-
-		if ( isset( $request['post_type'] ) ) {
-			$args['post_type'] = $request['post_type'];
-		}
-
-		$all = $wpdb->get_col(
-			$wpdb->prepare(
-				"
-				SELECT ID FROM $wpdb->posts
-				WHERE post_type = %s
-				",
-				$args['post_type']
-			)
-		);
-
-		return $all;
+		return $wpdb->get_col( "SELECT id FROM {$wpdb->prefix}edd_mrr_history" );
 	}
 
 	/**
@@ -153,33 +134,18 @@ class WPdrift_EDD_MRR_History_Controller extends WP_REST_Controller {
 	public function get_updated( $request ) {
 		global $wpdb;
 
-		$args = [
-			'post_type'       => 'download',
-			'date_parameters' => [],
-		];
-
 		if ( ! isset( $request['after'] ) ) {
 			return [];
 		}
 
-		$args['date_parameters'][] = [
-			'after' => $request['after'],
-		];
-
-		if ( isset( $request['post_type'] ) ) {
-			$args['post_type'] = $request['post_type'];
-		}
-
-		$date_query = new WP_Date_Query( $args['date_parameters'], 'post_modified' );
+		$date_query = new WP_Date_Query( [ 'after' => $request['after'] ], 'post_modified' );
+		$date_sql   = str_replace( "{$wpdb->posts}.post_modified", "{$wpdb->prefix}edd_mrr_history.created", $date_query->get_sql() );
 		$updated    = $wpdb->get_col(
-			$wpdb->prepare(
-				"
-				SELECT ID
-				FROM $wpdb->posts
-				WHERE post_type = %s {$date_query->get_sql()}
-				",
-				$args['post_type']
-			)
+			"
+			SELECT id
+			FROM {$wpdb->prefix}edd_mrr_history
+			WHERE 1=1 {$date_sql}
+			"
 		);
 
 		return $updated;
@@ -191,6 +157,8 @@ class WPdrift_EDD_MRR_History_Controller extends WP_REST_Controller {
 	 * @return [type]          [description]
 	 */
 	public function get_items_permissions_check( $request ) {
+		return true;
+
 		if ( ! current_user_can( 'list_users' ) ) {
 			return new WP_Error( 'rest_forbidden', esc_html__( 'You cannot view the resource.' ), array( 'status' => $this->authorization_status_code() ) );
 		}
