@@ -106,29 +106,6 @@ class Runn_Tools_Subscription_Reports {
 		$this->insert_mrr_history( $history_arr );
 	}
 
-	/**
-	 * [subscription_cancelled description]
-	 * @param  [type] $subscription_id               [description]
-	 * @param  [type] $subscription                  [description]
-	 * @return [type]                  [description]
-	 */
-	public function subscription_cancelled( $subscription_id, $subscription ) {
-		$history_arr = [
-			'customer_id' => $subscription->customer_id,
-			'created'     => current_time( 'mysql' ),
-		];
-
-		$final_mrr   = $this->get_final_mrr();
-		$account_mrr = $this->get_account_mrr( $subscription->customer_id );
-
-		$recurring_amount           = floatval( $subscription->recurring_amount );
-		$history_arr['account_mrr'] = $account_mrr - $recurring_amount;
-		$history_arr['delta']       = -$recurring_amount;
-		$history_arr['total_mrr']   = $final_mrr - $recurring_amount;
-
-		$this->insert_mrr_history( $history_arr );
-	}
-
 	public function count_mrr_histories() {
 		global $wpdb;
 		return (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}edd_mrr_history" );
