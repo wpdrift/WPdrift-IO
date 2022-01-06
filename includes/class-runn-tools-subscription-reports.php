@@ -5,7 +5,7 @@
 class Runn_Tools_Subscription_Reports {
 	function __construct() {
 		// add_action( 'wp_ajax_my_action', [ $this, 'my_action' ] );
-		add_action( 'edd_subscription_post_create', [ $this, 'subscription_post_create' ], 10, 2 );
+		add_action( 'edd_subscription_post_create', [ $this, 'increase_total_mmr' ] );
 		add_action( 'edd_subscription_cancelled', [ $this, 'decrease_total_mmr' ] );
 		add_action( 'edd_subscription_completed', [ $this, 'decrease_total_mmr' ] );
 		add_action( 'edd_subscription_expired', [ $this, 'decrease_total_mmr' ] );
@@ -79,29 +79,6 @@ class Runn_Tools_Subscription_Reports {
 		$history_arr['account_mrr'] = $account_mrr - $recurring_amount;
 		$history_arr['delta']       = -$recurring_amount;
 		$history_arr['total_mrr']   = $final_mrr - $recurring_amount;
-
-		$this->insert_mrr_history( $history_arr );
-	}
-
-	/**
-	 * [subscription_post_create description]
-	 * @param  [type] $id                 [description]
-	 * @param  [type] $args               [description]
-	 * @return [type]       [description]
-	 */
-	public function subscription_post_create( $id, $args ) {
-		$history_arr = [
-			'customer_id' => $args['customer_id'],
-			'created'     => $args['created'],
-		];
-
-		$final_mrr   = $this->get_final_mrr();
-		$account_mrr = $this->get_account_mrr( $args['customer_id'] );
-
-		$recurring_amount           = floatval( $args['recurring_amount'] );
-		$history_arr['account_mrr'] = $account_mrr + $recurring_amount;
-		$history_arr['delta']       = $recurring_amount;
-		$history_arr['total_mrr']   = $final_mrr + $recurring_amount;
 
 		$this->insert_mrr_history( $history_arr );
 	}
