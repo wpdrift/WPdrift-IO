@@ -106,8 +106,18 @@ class WPdrift_EDD_MRR_History_Controller extends WP_REST_Controller {
 	 * @return [type]          [description]
 	 */
 	public function get_item( $request ) {
+		global $wpdb;
 		$id          = is_numeric( $request ) ? $request : (int) $request['id'];
-		$mrr_history = get_post( $id );
+		$mrr_history = $wpdb->get_row(
+			$wpdb->prepare(
+				"
+				SELECT *
+				FROM {$wpdb->prefix}edd_mrr_history
+				WHERE id = %d
+				",
+				$id
+			)
+		);
 
 		if ( empty( $mrr_history ) ) {
 			return rest_ensure_response( [] );
