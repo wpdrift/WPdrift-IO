@@ -41,6 +41,7 @@ class WPdrift_IO_Deactivator {
 	 */
 	public static function drop_db_tables() {
 		global $wpdb;
+		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}edd_mrr_history" );
 	}
 
 	/**
