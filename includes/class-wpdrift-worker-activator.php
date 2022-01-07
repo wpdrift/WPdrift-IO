@@ -264,6 +264,7 @@ class WPdrift_Worker_Activator {
 			customer_id BIGINT(20) NOT NULL,
 			created datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
 			account_mrr MEDIUMTEXT NOT NULL,
+			account_arr MEDIUMTEXT NOT NULL,
 			total_mrr MEDIUMTEXT NOT NULL,
 			total_arr MEDIUMTEXT NOT NULL,
 			delta MEDIUMTEXT NOT NULL,
