@@ -9,7 +9,7 @@
     },
     "devDependencies": {
         "cross-env": "^5.2.0",
-        "laravel-mix": "^2.1.11",
+        "laravel-mix": "^6.0.49",
         "grunt": "^1.0.2",
         "grunt-checkbranch": "^1.0.4",
         "grunt-checkrepo": "^0.1.0",
